@@ -4,15 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from models import Base
+from db.models import Base
 
 url_object = URL.create(
     "postgresql+asyncpg",
     username="postgres",
     password="pg123",
     host="localhost",
-    database="postgres",
+    port="5432",
+    database="dagba",
 )
+
+db_url = f"postgresql+asyncpg://{url_object.username}:{url_object.password}@{url_object.host}:{url_object.port}/{url_object.database}"
 
 async_engine = create_async_engine(
     url_object,

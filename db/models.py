@@ -17,7 +17,7 @@ class NodeType(str, Enum):
     DAG_EDV = 'ENTITY_DATAVERSION'
     
 class Base(DeclarativeBase):
-    pass
+    __table_args__ = {"schema": "dagman"}
 
 class Dag(Base):
     __tablename__ = 'dag'
@@ -38,8 +38,8 @@ class Node(Base):
     
 class DagOperation(Base):
     __tablename__ = 'dag_operation'
-    node_id: Mapped[int] = mapped_column(ForeignKey('node.id'), primary_key=True)
-    dag_id: Mapped[int] = mapped_column(ForeignKey('dag.id'))
+    node_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)
+    dag_id: Mapped[int] = mapped_column(ForeignKey('dagman.dag.id'))
     step: Mapped[int] = mapped_column(nullable=False)
     dag: Mapped['Dag'] = relationship(back_populates='operations')
     node: Mapped['Node'] = relationship(back_populates='operation')
@@ -47,14 +47,14 @@ class DagOperation(Base):
     
 class DataVersion(Base):
     __tablename__ = 'dataversion'
-    node_id: Mapped[int] = mapped_column(ForeignKey('node.id'), primary_key=True)    
+    node_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)    
     entity_name: Mapped[str] = mapped_column(nullable=False)
     node: Mapped['Node'] = relationship(back_populates='dataversion')
     
 class Edge(Base):
     __tablename__ = 'edge'
-    left_id: Mapped[int] = mapped_column(ForeignKey('node.id'), primary_key=True)
-    right_id: Mapped[int] = mapped_column(ForeignKey('node.id'), primary_key=True)
+    left_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)
+    right_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)
     shift: Mapped[int] = mapped_column(nullable=False, default=0)
-    left_node = Mapped['Node'] = relationship(back_populates='left_edges', lazy=True)
-    right_node = Mapped['Node'] = relationship(back_populates='right_edges', lazy=True)
+    left_node: Mapped['Node'] = relationship(back_populates='left_edges', lazy=True)
+    right_node: Mapped['Node'] = relationship(back_populates='right_edges', lazy=True)

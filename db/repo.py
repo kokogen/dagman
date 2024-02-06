@@ -5,10 +5,10 @@ from typing import Optional
 from sqlalchemy import Integer, and_, cast, func, insert, inspect, or_, select, text
 from sqlalchemy.orm import aliased, contains_eager, joinedload, selectinload
 
-from models import Base, Dag
+from db.models import Base, Dag
 
-from sessions import async_session_factory
-from sessions import async_engine
+from db.sessions import async_session_factory
+from db.sessions import async_engine
 
 async def init_tables():
     async with async_engine.begin() as conn:
