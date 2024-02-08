@@ -18,6 +18,18 @@ class NodeType(str, Enum):
     
 class Base(DeclarativeBase):
     __table_args__ = {"schema": "dagman"}
+    
+    repr_cols_num = 3
+    repr_cols = tuple()
+    
+    def __repr__(self):
+        """Relationships не используются в repr(), т.к. могут вести к неожиданным подгрузкам"""
+        cols = []
+        for idx, col in enumerate(self.__table__.columns.keys()):
+            if col in self.repr_cols or idx < self.repr_cols_num:
+                cols.append(f"{col}={getattr(self, col)}")
+
+        return f"<{self.__class__.__name__} {', '.join(cols)}>"
 
 class Dag(Base):
     __tablename__ = 'dag'
@@ -33,8 +45,8 @@ class Node(Base):
     node_type: Mapped['NodeType'] = mapped_column(String(10), nullable=False)   
     operation: Mapped[Optional['DagOperation']] = relationship(back_populates='node')
     dataversion: Mapped[Optional['DataVersion']] = relationship(back_populates='node')
-    left_edges: Mapped[List['Edge']] = relationship(back_populates='left_node', lazy=True)
-    right_edges: Mapped[List['Edge']] = relationship(back_populates='right_node', lazy=True)
+    left_edges: Mapped[List['Edge']] = relationship(lazy=True, foreign_keys="Edge.left_id")
+    right_edges: Mapped[List['Edge']] = relationship(lazy=True, foreign_keys="Edge.right_id")
     
 class DagOperation(Base):
     __tablename__ = 'dag_operation'
@@ -56,5 +68,7 @@ class Edge(Base):
     left_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)
     right_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)
     shift: Mapped[int] = mapped_column(nullable=False, default=0)
-    left_node: Mapped['Node'] = relationship(back_populates='left_edges', lazy=True)
-    right_node: Mapped['Node'] = relationship(back_populates='right_edges', lazy=True)
+    left_node: Mapped['Node'] = relationship("Node", lazy=True, foreign_keys=[left_id])
+    right_node: Mapped['Node'] = relationship("Node", lazy=True, foreign_keys=[right_id])
+    # left_node: Mapped['Node'] = relationship(back_populates='left_edges', lazy=True, foreign_keys=[left_id])
+    # right_node: Mapped['Node'] = relationship(back_populates='right_edges', lazy=True, foreign_keys=[right_id])
