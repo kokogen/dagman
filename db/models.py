@@ -13,8 +13,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 
 class NodeType(str, Enum):
-    DAG_OP = 'DAG_OPERATION'
-    DAG_EDV = 'ENTITY_DATAVERSION'
+    DAG_OP = 'DAG_OP'
+    DAG_EDV = 'EDV'
     
 class Base(DeclarativeBase):
     __table_args__ = {"schema": "dagman"}
@@ -53,8 +53,8 @@ class DagOperation(Base):
     node_id: Mapped[int] = mapped_column(ForeignKey('dagman.node.id'), primary_key=True)
     dag_id: Mapped[int] = mapped_column(ForeignKey('dagman.dag.id'))
     step: Mapped[int] = mapped_column(nullable=False)
-    dag: Mapped['Dag'] = relationship(back_populates='operations')
-    node: Mapped['Node'] = relationship(back_populates='operation')
+    dag: Mapped['Dag'] = relationship(back_populates='operations', lazy=True)
+    node: Mapped['Node'] = relationship(back_populates='operation', lazy=True)
     params: Mapped[List[str]] = mapped_column(ARRAY(String), nullable=False)
     
 class DataVersion(Base):
