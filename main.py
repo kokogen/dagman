@@ -2,13 +2,14 @@ import asyncio
 from db.repo import RepoDag, RepoNode
 import db.sessions
 import db.models
+import dto
 
 
 async def main():
     print('dagman started.')
     
-    lst = await RepoDag.select_dags()
-    print(lst)
+    #lst = await RepoDag.select_dags()
+    #print(lst)
     
     #await RepoDag.del_dags_all()
     
@@ -26,6 +27,10 @@ async def main():
     # node = await RepoNode.select_node_by_id(7)
     # dag = node.operation.dag
     # print(node)
+    
+    nodes = await RepoNode.select_nodes()
+    json_nodes = [dto.NodeDTO.model_validate(node).model_dump() for node in nodes]
+    print(json_nodes)
     
     print('dagman finished')
     

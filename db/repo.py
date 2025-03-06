@@ -90,5 +90,19 @@ class RepoNode:
             return res.scalars().first()
             # rslt = res.scalars().all()
             # return [r for r in rslt]    
+            
+    @staticmethod
+    async def select_nodes() -> list[Node]:
+        async with async_session_factory() as session:
+            query = (
+                    select(Node)
+                    .options(selectinload(Node.operation).options(selectinload(DagOperation.dag)))
+                    .options(selectinload(Node.dataversion))
+                    .options(selectinload(Node.left_edges))
+                    .options(selectinload(Node.right_edges))
+            )
+            
+            res = await session.execute(query)
+            return [r for r in res.scalars().all()]
 
 
