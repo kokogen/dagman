@@ -1,36 +1,30 @@
 import asyncio
-from db.repo import RepoDag, RepoNode
+from db.repo import RepoDag, RepoNode, init_tables
 import db.sessions
 import db.models
 import dto
+from api.handlers import app
+import uvicorn
+from config import get_settings
 
 
 async def main():
+    settings = get_settings()
     print('dagman started.')
     
-    #lst = await RepoDag.select_dags()
-    #print(lst)
+    # Инициализация базы данных
+    await init_tables()
+    print('Database initialized.')
     
-    #await RepoDag.del_dags_all()
-    
-    # node1 = db.models.Node(name='node1', node_type=db.models.NodeType.DAG_OP)
-    # dag = db.models.Dag(name='first dag', params=['a', 'b'])
-    # dag_operation1 = db.models.DagOperation(dag=dag, node=node1, step=1, params = [])
-    # print(dag)
-    
-    # dag = await RepoDag.add_dag(dag)
-    # print(dag)
-    
-    # r = await RepoDag.select_dags()
-    # print(r)
-    
-    # node = await RepoNode.select_node_by_id(7)
-    # dag = node.operation.dag
-    # print(node)
-    
-    nodes = await RepoNode.select_nodes()
-    json_nodes = [dto.NodeDTO.model_validate(node).model_dump() for node in nodes]
-    print(json_nodes)
+    # Запуск FastAPI приложения
+    config = uvicorn.Config(
+        app,
+        host=settings.API_HOST,
+        port=settings.API_PORT,
+        reload=settings.API_RELOAD
+    )
+    server = uvicorn.Server(config)
+    await server.serve()
     
     print('dagman finished')
     
